@@ -1,3 +1,6 @@
+#ifndef scheduler_h
+#define scheduler_h
+
 #include <Arduino.h>
 
 #define MAX_TASKS 10
@@ -108,3 +111,5 @@ private:
         return NULL;
     }
 };
+
+#endif
