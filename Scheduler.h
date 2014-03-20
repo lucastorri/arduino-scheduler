@@ -42,9 +42,10 @@ public:
     void run() {
         Task *t = nextToRun();
         t->task();
-        t->free = true;
         if (t->repeat) {
-            every(t->interval, t->task);
+            t->scheduledAt = millis();
+        } else {
+            t->free = true;
         }
     }
 
