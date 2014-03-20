@@ -39,6 +39,15 @@ public:
         return schedule(interval, task, true);
     }
 
+    void cancel(void (*task)()) {
+        for (int i = 0; i < MAX_TASKS; i++) {
+            Task *t = &tasks[i];
+            if (t->task == task) {
+                t->free = true;
+            }
+        }
+    }
+
     void run() {
         Task *t = nextToRun();
         t->task();
