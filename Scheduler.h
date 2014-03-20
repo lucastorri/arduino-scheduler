@@ -11,12 +11,14 @@ public:
 
     boolean free;
     boolean repeat;
+    boolean firstTime;
+    unsigned long warmup;
     unsigned long interval;
     unsigned long scheduledAt;
     void (*task)();
 
     boolean isDue(unsigned long now) {
-        return (now - scheduledAt) >= interval;
+        return (now - scheduledAt) >= (firstTime ? warmup : interval);
     }
 };
 
@@ -32,13 +34,17 @@ public:
     }
 
     boolean after(unsigned long interval, void (*task)()) {
-        return schedule(interval, task, false);
+        return schedule(interval, interval, task, false);
     }
 
     boolean every(unsigned long interval, void (*task)()) {
-        return schedule(interval, task, true);
+        return schedule(interval, interval, task, true);
     }
 
+    boolean every(unsigned long interval, void (*task)(), unsigned long warmup) {
+        return schedule(interval, warmup, task, true);
+    }
+    
     void cancel(void (*task)()) {
         for (int i = 0; i < MAX_TASKS; i++) {
             Task *t = &tasks[i];
@@ -53,6 +59,7 @@ public:
         t->task();
         if (t->repeat) {
             t->scheduledAt = millis();
+            t->firstTime = false;
         } else {
             t->free = true;
         }
@@ -63,7 +70,7 @@ private:
 
     Task tasks[MAX_TASKS];
 
-    boolean schedule(unsigned long interval, void (*task)(), boolean repeat) {
+    boolean schedule(unsigned long interval, unsigned long warmup, void (*task)(), boolean repeat) {
         Task *t = nextFree();
         if (!t) {
             return false;
@@ -71,6 +78,8 @@ private:
         t->task = task;
         t->free = false;
         t->repeat = repeat;
+        t->firstTime = true;
+        t->warmup = warmup;
         t->interval = interval;
         t->scheduledAt = millis();
         return true;
